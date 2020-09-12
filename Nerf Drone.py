@@ -11,8 +11,8 @@ ECHO = 31
 GPIO.setup(TRIG, GPIO.OUT)
 GPIO.setup(ECHO, GPIO.IN)
 
-m1 = PiMotor.Motor("MOTOR1", 1)
-m2 = PiMotor.Motor("MOTOR2", 1)
+m1 = PiMotor.Motor("MOTOR1", 1) #head
+m2 = PiMotor.Motor("MOTOR2", 1) #feet
 
 motorAll = PiMotor.LinkedMotors(m1, m2)
 
@@ -25,13 +25,13 @@ def stop():
 
 def forward():
     print("Robot Moving Forward ")
-    m1.forward(100)
+    m2.forward(100)
     time.sleep(2)
 
 
 def back():
     print("Robot Moving Backward ")
-    m1.reverse(100)
+    m2.reverse(100)
     time.sleep(2)
 
 
@@ -49,10 +49,21 @@ def right():
     time.sleep(2)
 
 
+def look():
+    motorAll.stop()
+    print("looking around...")
+    time.sleep(3)
+    m1.forward(100)
+    time.sleep(3)
+    m1.reverse(100)
+    time.sleep(3)
+
+
 stop()
 count = 0
 avgDistance = 0
 i = 0
+pulse_start = 0
 while True:
 
     for i in range(5):
@@ -66,23 +77,16 @@ while True:
 
     while GPIO.input(ECHO) == 1:
         pulse_end = time.time()
-        pulse_duration = pulse_end - time.time()
+        pulse_duration = pulse_end - pulse_start
 
         distance = (pulse_duration * 34300)/2
         distance = round(distance, 2)
         avgDistance = avgDistance + distance
 
-        avgDistance = avgDistance/5
+        avgDistance = avgDistance / 5
         print(avgDistance)
 
-    if avgDistance < 20:
-        count = count + 1
-        stop()
-        time.sleep(1)
+    if avgDistance > 20:
+        forward()
+    else:
         back()
-        time.sleep(2)
-        if count % 4 == 1:
-            right()
-
-        else:
-            forward()
